@@ -240,7 +240,7 @@ where
     // Gate: keep in sync with the api.rs gpu_threshold default (65536). Since
     // packed_evals.len() <= vals.len(), an equal threshold guarantees any poly routed
     // to the parallel-CPU commit pool never hits this shared-buffer GPU path.
-    #[cfg(feature = "cuda_pcs")]
+    #[cfg(all(feature = "cuda_pcs", target_os = "linux"))]
     if packed_evals.len() >= std::env::var("GPU_COMMIT_THRESHOLD").ok()
         .and_then(|s| s.parse().ok()).unwrap_or(65536usize)
         && std::env::var("USE_GPU_PROVER").is_ok() {
@@ -719,7 +719,7 @@ pub(crate) fn simd_open_linear_combine<F, EvalF, SimdF>(
     let mut buffer = vec![F::ZERO; com_pack_size * EvalF::DEGREE];
 
     // GPU FFI acceleration for large commits
-    #[cfg(feature = "cuda_pcs")]
+    #[cfg(all(feature = "cuda_pcs", target_os = "linux"))]
     if eval_row.len() >= 32768 {
         let t_gpu = std::time::Instant::now();
         let msg_len = eval_row.len();
