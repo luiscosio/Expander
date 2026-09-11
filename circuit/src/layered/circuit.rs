@@ -376,7 +376,8 @@ impl<C: FieldEngine> Circuit<C> {
                 unsafe {
                     let layout = std::alloc::Layout::array::<C::SimdCircuitField>(n * layer_size).unwrap();
                     let ptr = std::alloc::alloc_zeroed(layout) as *mut C::SimdCircuitField;
-                    // Request transparent huge pages to reduce page faults
+                    // Request transparent huge pages to reduce page faults (Linux only)
+                    #[cfg(target_os = "linux")]
                     libc::madvise(ptr as *mut _, layout.size(), libc::MADV_HUGEPAGE);
                     Vec::from_raw_parts(ptr, n * layer_size, n * layer_size)
                 }
