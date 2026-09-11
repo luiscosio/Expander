@@ -82,8 +82,11 @@ where
     let root_bytes: [u8; 32] = unsafe {
         std::ptr::read(scratch_pad.merkle_cap.get(0).map(|n| n as *const _ as *const [u8; 32]).unwrap_or(&std::ptr::null::<[u8;32]>() as *const _ as *const [u8;32]))
     };
+    #[allow(unused_variables)]
     let gpu_tree = super::utils::GPU_TREE_REGISTRY.lock().unwrap().get(&root_bytes).copied();
 
+    // The GPU-resident open needs the CUDA kernels, which only exist on Linux builds.
+    #[cfg(target_os = "linux")]
     if let Some((tree_id, _gpu_n_leaves)) = gpu_tree {
         // GPU PCS open: linear_combine + proximity + Merkle paths all on GPU
         let _t_gpu = std::time::Instant::now();
